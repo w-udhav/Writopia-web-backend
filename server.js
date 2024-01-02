@@ -10,7 +10,8 @@ app
   .use(cors())
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
-  .use("user", require("./routes/userRoutes"));
+  .use("/user", require("./routes/userRoutes"))
+  .use("/blog", require("./routes/blogRoutes"));
 
 mongoose
   .connect(process.env.MONGODB_URI)

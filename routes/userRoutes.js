@@ -1,3 +1,11 @@
-const route = require("express").Router();
+const { createUser, loginUser } = require("../controllers/UserController");
+const checkRole = require("../middlewares/checkRole");
 
-route.post("/register");
+const router = require("express").Router();
+
+router.post("/register", createUser);
+router.post("/login", loginUser);
+
+router.post("/admin/register", checkRole(["admin"]), createUser);
+
+module.exports = router;
