@@ -4,7 +4,7 @@ const UserSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true, "Username is required"],
-    minlength: [6, "Username must be at least 6 characters"],
+    minlength: [5, "Username must be at least 6 characters"],
     unique: true,
   },
   email: {
@@ -20,6 +20,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     enum: ["admin", "user"],
     default: "user",
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
   blogPosts: {
     type: [mongoose.Schema.Types.ObjectId],

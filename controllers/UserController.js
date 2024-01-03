@@ -24,6 +24,8 @@ exports.createUser = async (req, res) => {
       username,
       email,
       hashedPassword,
+      isAdmin: false,
+      role: "user",
     });
 
     await user.save();
@@ -46,7 +48,7 @@ exports.createUser = async (req, res) => {
       }
     );
   } catch (error) {
-    res.status(500).send("Server error");
+    res.status(500).send(error);
   }
 };
 
@@ -57,43 +59,44 @@ exports.loginUser = async (req, res) => {
 
   let user;
 
-  if (emailRegex.test(name)) {
-    user = await User.findOne({ email: name });
-  } else {
-    user = await User.findOne({ username: name });
-  }
-
-  if (!user) {
-    return res
-      .status(400)
-      .json({ msg: "User does not exist", errorCode: "none" });
-  }
-
-  const isMatch = await bcrypt.compare(password, user.hashedPassword);
-  if (!isMatch) {
-    return res
-      .status(400)
-      .json({ msg: "Incorrect password", errorCode: "password" });
-  }
-
-  const payload = {
-    user: {
-      id: user._id,
-      role: user.role,
-    },
-  };
-
-  jwt.sign(
-    payload,
-    process.env.JWT_SECRET,
-    { expiresIn: "5h" },
-    (err, token) => {
-      if (err) throw err;
-      res.json({ token });
+  try {
+    if (emailRegex.test(name)) {
+      user = await User.findOne({ email: name });
+    } else {
+      user = await User.findOne({ username: name });
     }
-  );
-};
 
-// exports.forgotPassword = async (req, res) => {
-//   const { email } = req.body;
-// };
+    if (!user) {
+      return res
+        .status(400)
+        .json({ msg: "User does not exist", errorCode: "none" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.hashedPassword);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ msg: "Incorrect password", errorCode: "password" });
+    }
+
+    const payload = {
+      user: {
+        id: user._id,
+        role: user.role,
+      },
+    };
+
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: "5h" },
+      (err, token) => {
+        if (err) throw err;
+        res.json({ token });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+    res.send(error);
+  }
+};

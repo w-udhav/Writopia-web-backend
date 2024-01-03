@@ -1,9 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
-
-dotenv.config();
+require("dotenv").config();
 const app = express();
 
 app
@@ -11,7 +9,8 @@ app
   .use(express.json())
   .use(express.urlencoded({ extended: true }))
   .use("/user", require("./routes/userRoutes"))
-  .use("/blog", require("./routes/blogRoutes"));
+  .use("/blog", require("./routes/blogRoutes"))
+  .use("/category", require("./routes/categoryRoutes"));
 
 mongoose
   .connect(process.env.MONGODB_URI)
