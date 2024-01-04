@@ -44,7 +44,18 @@ exports.createUser = async (req, res) => {
       { expiresIn: "5h" },
       (err, token) => {
         if (err) throw err;
-        res.status(201).json({ token, msg: "User created successfully" });
+        res.status(201).json({
+          msg: "User created successfully",
+          token,
+          data: {
+            user: {
+              id: user._id,
+              username: user.username,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            },
+          },
+        });
       }
     );
   } catch (error) {
@@ -92,11 +103,25 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "5h" },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({
+          token,
+          data: {
+            user: {
+              id: user._id,
+              username: user.username,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            },
+          },
+        });
       }
     );
   } catch (error) {
     console.log(error);
     res.send(error);
   }
+};
+
+exports.getUser = async (req, res) => {
+  res.json(req.user);
 };

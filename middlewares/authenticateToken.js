@@ -14,11 +14,21 @@ const authenticateToken = async (req, res, next) => {
       return res.status(401).json({ msg: "Invalid token" });
     }
 
-    req.user = user;
+    req.user = {
+      id: user._id,
+      isAdmin: user.isAdmin,
+      role: user.role,
+      username: user.username,
+      email: user.email,
+    };
     next();
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ msg: "Token expired" });
+    } else {
+      console.error(err);
+      res.status(500).json({ msg: "Server error" });
+    }
   }
 };
 

@@ -3,6 +3,8 @@ const Category = require("../models/Category");
 exports.createCategory = async (req, res) => {
   const { name } = req.body;
   try {
+    const check = await Category.findOne({ name });
+    if (check) return res.status(400).json({ msg: "Category already exists" });
     const category = new Category({ name });
     await category.save();
     res.status(201).json({ category });

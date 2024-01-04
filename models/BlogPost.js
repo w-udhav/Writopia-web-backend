@@ -14,6 +14,10 @@ const BlogPostSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "Author is required"],
   },
+  imageUrl: {
+    type: String,
+    default: "",
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
