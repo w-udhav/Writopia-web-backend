@@ -14,6 +14,12 @@ exports.getBlogs = async (req, res) => {
     const blogs = await BlogPost.find(query).populate(
       "author category comments"
     );
+    blogs.forEach((blog) => {
+      if (blog.imageUrl) {
+        blog.imageUrl = `${process.env.SERVER_URL}/${blog.imageUrl}`;
+      }
+    });
+    blogs.reverse();
     res.status(200).json({ blogs });
   } catch (error) {
     console.error("Error in getBlogs controller");
@@ -101,13 +107,12 @@ exports.updateBlog = async (req, res) => {
   try {
     const blog = await BlogPost.findById(id);
     if (!blog) return res.status(404).json({ msg: "Blog not found" });
-    if (blog.author.toString() !== req.user.id)
+    if (blog.author.toString() !== req.user.id && req.user.role !== "admin")
       return res.status(401).json({ msg: "Unauthorized" });
 
-    const { title, content, category } = req.body;
-    blog.title = title;
-    blog.content = content;
-    blog.category = category;
+    const { isPublished } = req.body;
+    blog.isPublished = isPublished;
+
     await blog.save();
     res.status(200).json({ blog });
   } catch (error) {
@@ -120,10 +125,10 @@ exports.deleteBlog = async (req, res) => {
   const blog = await BlogPost.findById(id);
   if (!blog) return res.status(404).json({ msg: "Blog not found" });
   try {
-    console.log("Blog author ID:", blog.author.toString());
-    console.log("Request user ID:", req.user.id.toString());
-    console.log(blog.author.toString() === req.user.id.toString());
-    if (blog.author.toString() !== req.user.id.toString()) {
+    if (
+      blog.author.toString() !== req.user.id.toString() &&
+      req.user.role !== "admin"
+    ) {
       return res.status(401).json({ msg: "Unauthorized" });
     }
     await blog.deleteOne();

@@ -69,7 +69,7 @@ exports.createUser = async (req, res) => {
       },
     };
 
-    const link = `http://localhost:${process.env.PORT}/user/verify/${user._id}`;
+    const link = `${process.env.SERVER_URL}/user/verify/${user._id}`;
     const data = {
       email: user.email,
       subject: "Verify your account",
