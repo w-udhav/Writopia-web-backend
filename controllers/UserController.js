@@ -1,6 +1,37 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+
+function sendEmail(data) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.MAIL_USERID,
+      pass: process.env.MAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.MAIL_USERID,
+    to: data.email,
+    subject: data.subject,
+    text: data.link,
+  };
+
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+      return false;
+    } else {
+      console.log("Email sent: " + info.response);
+      return true;
+    }
+  });
+}
+
+//? 1. get the data from the body or params or query
+//? 2. validate the data
 
 exports.createUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -19,7 +50,7 @@ exports.createUser = async (req, res) => {
 
     // hash password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt); //SHA256
     user = new User({
       username,
       email,
@@ -38,6 +69,15 @@ exports.createUser = async (req, res) => {
       },
     };
 
+    const link = `http://localhost:${process.env.PORT}/user/verify/${user._id}`;
+    const data = {
+      email: user.email,
+      subject: "Verify your account",
+      link,
+    };
+
+    sendEmail(data);
+
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
@@ -53,6 +93,7 @@ exports.createUser = async (req, res) => {
               username: user.username,
               email: user.email,
               isAdmin: user.isAdmin,
+              isVerified: user.isVerified,
             },
           },
         });
@@ -111,6 +152,7 @@ exports.loginUser = async (req, res) => {
               username: user.username,
               email: user.email,
               isAdmin: user.isAdmin,
+              isVerified: user.isVerified,
             },
           },
         });
@@ -124,4 +166,25 @@ exports.loginUser = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   res.json(req.user);
+};
+
+exports.verifyUser = async (req, res) => {
+  const { id } = req.params;
+  let user = await User.findById(id);
+  if (!user) return res.status(404).json({ msg: "User not found" });
+
+  if (user.isVerified)
+    return res.status(400).json({ msg: "User Already verified" });
+
+  user.isVerified = true;
+  await user.save();
+  res.status(200).json({ msg: "User verified" });
+};
+
+exports.status = async (req, res) => {
+  const { id } = req.user;
+  let user = await User.findById(id);
+  if (!user) return res.status(404).json({ msg: "User not found" });
+
+  res.status(200).json(user.isVerified);
 };

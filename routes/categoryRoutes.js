@@ -11,9 +11,9 @@ const router = require("express").Router();
 router.use(authenticateToken);
 // router.use(checkRole(["admin"]));
 
-router.get("/all", checkRole(["admin"]), getCategories);
-router.post("/create", createCategory);
-router.put("/:id", updateCategory);
-router.delete("/:id", deleteCategory);
+router.get("/all", getCategories);
+router.post("/create", checkRole(["admin"]), createCategory);
+router.put("/:id", checkRole(["admin"]), updateCategory);
+router.delete("/:id", checkRole(["admin"]), deleteCategory);
 
 module.exports = router;

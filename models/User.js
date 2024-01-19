@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
   blogPosts: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "BlogPost",

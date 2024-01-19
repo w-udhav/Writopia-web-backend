@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const authenticateToken = async (req, res, next) => {
-  const token = req.header("Authorization").split(" ")[1];
+  const token = req.header("Authorization").split(" ")[1]; //? Bearer <token>
   if (!token) {
     return res.status(401).json({ msg: "No token, authorization denied" });
   }
@@ -17,6 +17,7 @@ const authenticateToken = async (req, res, next) => {
     req.user = {
       id: user._id,
       isAdmin: user.isAdmin,
+      isVerified: user.isVerified,
       role: user.role,
       username: user.username,
       email: user.email,

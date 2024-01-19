@@ -14,6 +14,10 @@ const BlogPostSchema = new mongoose.Schema({
     ref: "User",
     required: [true, "Author is required"],
   },
+  isPublished: {
+    type: Boolean,
+    default: false,
+  },
   imageUrl: {
     type: String,
     default: "",

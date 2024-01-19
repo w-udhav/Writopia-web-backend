@@ -1,11 +1,15 @@
 const BlogPost = require("../models/BlogPost");
 const Comment = require("../models/Comment");
+const { upload } = require("../server");
 
 exports.getBlogs = async (req, res) => {
   try {
-    const query = {};
+    const query = { isPublished: true };
     if (req.query.category) {
       query.category = req.query.category;
+    }
+    if (req.query.isPublished) {
+      query.isPublished = req.query.isPublished;
     }
     const blogs = await BlogPost.find(query).populate(
       "author category comments"
@@ -75,11 +79,14 @@ exports.deleteComment = async (req, res) => {
 exports.createBlog = async (req, res) => {
   const { title, content, category } = req.body;
   try {
+    let isPublished = req.user.role === "admin" ? true : false;
     const newBlog = new BlogPost({
       title,
       content,
       category,
       author: req.user.id,
+      isPublished,
+      imageUrl: req.file.path,
     });
     await newBlog.save();
     res.status(201).json({ newBlog });
@@ -110,15 +117,19 @@ exports.updateBlog = async (req, res) => {
 
 exports.deleteBlog = async (req, res) => {
   const { id } = req.params;
+  const blog = await BlogPost.findById(id);
+  if (!blog) return res.status(404).json({ msg: "Blog not found" });
   try {
-    const blog = await BlogPost.findById(id);
-    if (!blog) return res.status(404).json({ msg: "Blog not found" });
-    if (blog.author.toString() !== req.user.id)
+    console.log("Blog author ID:", blog.author.toString());
+    console.log("Request user ID:", req.user.id.toString());
+    console.log(blog.author.toString() === req.user.id.toString());
+    if (blog.author.toString() !== req.user.id.toString()) {
       return res.status(401).json({ msg: "Unauthorized" });
-
-    await blog.remove();
+    }
+    await blog.deleteOne();
     res.status(200).json({ msg: "Blog deleted" });
   } catch (error) {
+    console.error(error);
     res.status(500).send("Server error");
   }
 };
